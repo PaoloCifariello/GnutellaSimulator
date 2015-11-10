@@ -10,26 +10,23 @@
 package p2p.example.basic;
 
 
-import p2p.simulator.AbstractPeer;
-import p2p.simulator.P2PNetwork;
+import p2p.simulator.core.AbstractPeer;
+import p2p.simulator.core.P2PNetwork;
 
 public class BasicGnutella {
-    private static int NMESSAGES;
+    public static int NPEERS;
+    private static P2PNetwork overlay;
 
-    public static void test(int npeers, int neighbourdLimit, int networkDelay) {
-        P2PNetwork overlay = new P2PNetwork();
-        overlay.setNetworkDelay(networkDelay);
+    public static void test() {
+        overlay = new P2PNetwork();
 
-        for (int i = 0; i < npeers; i++) {
+        for (int i = 0; i < NPEERS; i++) {
             AbstractPeer newPeer = new BasicPeer();
-            newPeer.setNeighbourdLimit(neighbourdLimit);
             newPeer.joinNetwork(overlay);
         }
-
-        NMESSAGES = overlay.getMessageQueue().getNumberOfMessages();
     }
 
     public static int getNumberOfMessages() {
-        return NMESSAGES;
+        return overlay.getNumberOfMessages();
     }
 }

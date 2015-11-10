@@ -10,7 +10,7 @@
 package p2p.example.cached;
 
 
-import p2p.simulator.P2PNetwork;
+import p2p.simulator.core.P2PNetwork;
 
 public class CachedGnutella {
     public static void test() {

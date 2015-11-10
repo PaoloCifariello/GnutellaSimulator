@@ -7,24 +7,25 @@
  * Paolo Cifariello
  */
 
-package p2p.simulator;
+package p2p.simulator.core;
 
 public class Message {
     private final String destination;
     private final String source;
     private final MessageType type;
-    private long TTL = 2;
+    private long TTL;
+
+    public static long DEFAULT_TTL = 2; // default TTL
 
     public Message(MessageType type, String destination, String source) {
         this.type = type;
         this.destination = destination;
         this.source = source;
+        this.TTL = DEFAULT_TTL;
     }
 
     public Message(MessageType type, String destination, String source, long TTL) {
-        this.type = type;
-        this.destination = destination;
-        this.source = source;
+        this(type, destination, source);
         this.TTL = TTL;
     }
 

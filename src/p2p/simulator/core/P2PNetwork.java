@@ -7,31 +7,34 @@
  * Paolo Cifariello
  */
 
-package p2p.simulator;
+package p2p.simulator.core;
+
+import p2p.simulator.log.LogLevel;
+import p2p.simulator.log.Logger;
 
 import java.util.ArrayList;
 
 public class P2PNetwork {
     private ArrayList<AbstractPeer> connectedAbstractPeers;
-    private MessageQueue messageQueue;
+    private NetworkSimulator networkSimulator;
 
     public P2PNetwork() {
-        this.connectedAbstractPeers = new ArrayList<AbstractPeer>();
-        this.messageQueue = new MessageQueue();
+        this.connectedAbstractPeers = new ArrayList<>();
+        this.networkSimulator = new NetworkSimulator();
+        new Thread(this.networkSimulator).start();
     }
 
-    public void setNetworkDelay(int networkDelay) {
-        this.messageQueue.setNetworkDelay(networkDelay);
+
+    public int getNumberOfMessages() {
+        return this.networkSimulator.getNumberOfMessages();
     }
 
-    public MessageQueue getMessageQueue() {
-        return this.messageQueue;
-    }
-
-    public void registerPeer(AbstractPeer abstractPeer) {
+    public NetworkSimulator registerPeer(AbstractPeer abstractPeer) {
         this.connectedAbstractPeers.add(abstractPeer);
-        this.messageQueue.registerPeer(abstractPeer.getPeerAddress(), abstractPeer);
-        System.out.println("Peer " + abstractPeer.getPeerAddress() + " has joined the network");
+        this.networkSimulator.registerPeer(abstractPeer.getPeerAddress(), abstractPeer);
+        Logger.log("Peer " + abstractPeer.getPeerAddress() + " has joined the network", LogLevel.OPTIONAL);
+
+        return this.networkSimulator;
     }
 
     public String getRandomPeerAddress() {
@@ -45,4 +48,5 @@ public class P2PNetwork {
 
         return ret;
     }
+
 }

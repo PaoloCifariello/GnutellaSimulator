@@ -9,7 +9,8 @@
 
 package p2p.example.basic;
 
-import p2p.simulator.AbstractPeer;
+import p2p.simulator.core.AbstractPeer;
 
 public class BasicPeer extends AbstractPeer {
+
 }
