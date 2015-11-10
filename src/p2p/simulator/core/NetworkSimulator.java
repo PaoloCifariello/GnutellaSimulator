@@ -43,8 +43,6 @@ public class NetworkSimulator implements Runnable {
                 this.forwardMessage(nextMessage);
             }
         }
-
-
     }
 
     public void registerPeer(String peerAddress, AbstractPeer abstractPeer) {
@@ -61,7 +59,8 @@ public class NetworkSimulator implements Runnable {
     }
 
     private void forwardMessage(Message message) {
-        Logger.log("Message " + message.getType() + " sent from " + message.getSource() + " to " + message.getDestination(), LogLevel.OPTIONAL);
+        Logger.log("Message " + message.getType() + " sent from " + message.getSource() + " to " + message.getDestination() + "\n"
+                + "Originated by " + message.getPayload().getSource() + " and directed to " + message.getPayload().getDestination(), LogLevel.OPTIONAL);
         message.decreaseTTL();
         AbstractPeer destination = this.peerAddressMap.get(message.getDestination());
 

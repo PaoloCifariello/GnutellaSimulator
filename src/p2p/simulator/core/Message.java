@@ -14,8 +14,10 @@ public class Message {
     private final String source;
     private final MessageType type;
     private long TTL;
+    private MessagePayload payload;
 
     public static long DEFAULT_TTL = 2; // default TTL
+
 
     public Message(MessageType type, String destination, String source) {
         this.type = type;
@@ -51,6 +53,14 @@ public class Message {
 
     public long getTTL() {
         return this.TTL;
+    }
+
+    public MessagePayload getPayload() {
+        return payload;
+    }
+
+    public void setPayload(MessagePayload payload) {
+        this.payload = payload;
     }
 }
 
