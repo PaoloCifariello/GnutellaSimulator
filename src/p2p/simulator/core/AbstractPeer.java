@@ -15,30 +15,39 @@ import p2p.simulator.log.Logger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public abstract class AbstractPeer {
-    private String peerAddress;
-    private ArrayList<String> neighbours;
+public abstract class AbstractPeer implements Runnable {
+    protected String peerAddress;
+    protected ArrayList<String> neighbours;
 
     public static int NEIGHBOURS_LIMIT = 5; // default value
-    private NetworkSimulator network;
-    private HashMap<String, String> messageSources;
+
+    private P2PNetwork overlay;
+    private Thread thread;
+    private ConcurrentLinkedQueue<Message> inMessageQueue;
+
+    protected NetworkSimulator network;
+    protected HashMap<String, String> messageSources;
+
+
 
     public AbstractPeer() {
         this.peerAddress = UUID.randomUUID().toString();
         this.neighbours = new ArrayList<>();
         this.messageSources = new HashMap<>();
+        this.inMessageQueue = new ConcurrentLinkedQueue<>();
     }
 
     public String getPeerAddress() {
         return this.peerAddress;
     }
 
-    public void joinNetwork(P2PNetwork overlay) {
+    public void joinNetwork() {
         // get a random peer address from the network
-        String randomPeerAddress = overlay.getRandomPeerAddress();
+        String randomPeerAddress = this.overlay.getRandomPeerAddress();
         // register on the network (just for simulation purposes)
-        this.network = overlay.registerPeer(this);
+        this.network = overlay.registerPeer(this, this.inMessageQueue);
 
         // add the new peer to the list of neighbours
         if (randomPeerAddress != null) {
@@ -60,8 +69,7 @@ public abstract class AbstractPeer {
             return;
         }
 
-        switch (message.getType())
-        {
+        switch (message.getType()) {
             case PING:
                 this.receivePing(message);
                 break;
@@ -73,48 +81,32 @@ public abstract class AbstractPeer {
         }
     }
 
-    private void receivePing(Message message) {
-        String pingingPeerAddress = message.getSource();
-        String originalSource = message.getPayload().getSource();
-
-        // If I can add more neighbours then I add the pinging peer and I send him back a PONG
-        if (this.neighbours.size() < this.NEIGHBOURS_LIMIT && !this.neighbours.contains(pingingPeerAddress)) {
-            this.neighbours.add(message.getSource());
-            Message response = new Message(MessageType.PONG, pingingPeerAddress, this.peerAddress);
-            response.setPayload(new MessagePayload(this.peerAddress, originalSource));
-            this.sendMessage(response);
-        }
-
-        // Store source of the message used to send back PONG messages
-        this.messageSources.put(originalSource, message.getSource());
-
-        // Then I forward the PING request to all my neighbours
-        this.neighbours
-                .stream()
-                .filter(neighbourAddress -> !neighbourAddress.equals(pingingPeerAddress))
-                .forEach(neighbourAddress -> { // if it's not the currently pinging peer, send him a Ping
-                    Message pingMessage = new Message(MessageType.PING, neighbourAddress, this.peerAddress, message.getTTL());
-                    pingMessage.setPayload(message.getPayload());
-                    this.sendMessage(pingMessage);
-                });
+    public void start(P2PNetwork overlay) {
+        this.overlay = overlay;
+        this.thread = new Thread(this);
+        this.thread.start();
     }
 
-    private void receivePong(Message message) {
-        String finalDestination = message.getPayload().getDestination();
-        String originalSource = message.getPayload().getSource();
+    public void run() {
+        this.joinNetwork();
 
-        if (finalDestination.equals(this.peerAddress)) { // I am the destination of the PONG message
-            if (this.neighbours.size() < NEIGHBOURS_LIMIT) { //we can accept another neighbour
-                this.neighbours.add(originalSource);
+        while (true) {
+
+            if (this.inMessageQueue.size() == 0) {
+                try {
+                    synchronized (this.inMessageQueue) {
+                        this.inMessageQueue.wait();
+                    }
+                } catch (InterruptedException e) { }    // simply exits from wait state
             }
-        } else { // Received PONG, but I am not the final destination (need to forward it on the backward path
-            String backwardPathAddress = this.messageSources.get(finalDestination);
-            Message replyMessage = new Message(MessageType.PONG, backwardPathAddress, this.peerAddress, message.getTTL());
-            replyMessage.setPayload(message.getPayload());
-            this.sendMessage(replyMessage);
 
+            Message message;
+            while ((message = this.inMessageQueue.poll()) != null) {
+                this.receiveMessage(message);
+            }
         }
-
-
     }
+
+    abstract protected void receivePing(Message message);
+    abstract protected void receivePong(Message message);
 }

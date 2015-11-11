@@ -18,12 +18,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class NetworkSimulator implements Runnable {
     public static long NETWORK_DELAY = 100; // Default value: 100ms
 
-    public HashMap<String, AbstractPeer> peerAddressMap;
-    private ConcurrentLinkedQueue<Message> messageQueue;
+    public HashMap<String, ConcurrentLinkedQueue<Message>> peerAddressMap;
+    private ConcurrentLinkedQueue<Message> outMessageQueue;
     private int nMessages = 0;
 
     public NetworkSimulator() {
-        this.messageQueue = new ConcurrentLinkedQueue<>();;
+        this.outMessageQueue = new ConcurrentLinkedQueue<>();;
         this.peerAddressMap = new HashMap<>();
     }
 
@@ -37,7 +37,7 @@ public class NetworkSimulator implements Runnable {
                 e.printStackTrace();
             }
 
-            Message nextMessage = this.messageQueue.poll();
+            Message nextMessage = this.outMessageQueue.poll();
 
             if (nextMessage != null) {
                 this.forwardMessage(nextMessage);
@@ -45,8 +45,8 @@ public class NetworkSimulator implements Runnable {
         }
     }
 
-    public void registerPeer(String peerAddress, AbstractPeer abstractPeer) {
-        this.peerAddressMap.put(peerAddress, abstractPeer);
+    public void registerPeer(String peerAddress, AbstractPeer abstractPeer, ConcurrentLinkedQueue<Message> peerInMessageQueue) {
+        this.peerAddressMap.put(peerAddress, peerInMessageQueue);
     }
 
     public int getNumberOfMessages() {
@@ -55,18 +55,22 @@ public class NetworkSimulator implements Runnable {
 
     public void sendMessage(Message message) {
         // Adding the new message to the queue
-        this.messageQueue.add(message);
+        this.outMessageQueue.add(message);
     }
 
     private void forwardMessage(Message message) {
         Logger.log("Message " + message.getType() + " sent from " + message.getSource() + " to " + message.getDestination() + "\n"
                 + "Originated by " + message.getPayload().getSource() + " and directed to " + message.getPayload().getDestination(), LogLevel.OPTIONAL);
         message.decreaseTTL();
-        AbstractPeer destination = this.peerAddressMap.get(message.getDestination());
+        ConcurrentLinkedQueue<Message> destinationQueue = this.peerAddressMap.get(message.getDestination());
 
-        if (destination != null) {
-            destination.receiveMessage(message);
+        if (destinationQueue != null) {
+            destinationQueue.add(message);
+            synchronized (destinationQueue) {
+                destinationQueue.notify();
+            }
         }
+
         // increase total number of exchanged messages
         this.nMessages++;
     }

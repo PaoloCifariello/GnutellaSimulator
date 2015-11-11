@@ -18,12 +18,13 @@ import p2p.simulator.log.LogLevel;
 import p2p.simulator.log.Logger;
 
 public class Application {
-    static final int NPEERS = 100000;               // # of peers
-    static final int NETWORK_DELAY = 0;        // 50ms
-    static final int NEIGHBOURS_LIMIT = 128;      // max # of neighbours for each peer
-    static final int DEFAULT_TTL = 10;           // starting TTL of sended messages
+    static final int NPEERS = 1000;               // # of peers
+    static final int NETWORK_DELAY = 10;        // 50ms
+    static final int NEIGHBOURS_LIMIT = 20;      // max # of neighbours for each peer
+    static final int DEFAULT_TTL = 4;           // starting TTL of sended messages
     static final long DEBUG_OUTPUT_TIME = 1000; // prints every 1s how many messages have been forwarded
-    static final LogLevel LEVEL_BARRIER = LogLevel.OPTIONAL;
+    static final long JOIN_DELAY = 10;
+    static final LogLevel LEVEL_BARRIER = LogLevel.ESSENTIAL;
 
     public static void main(String[] args) {
         // Set up configuration variables
@@ -31,6 +32,7 @@ public class Application {
         AbstractPeer.NEIGHBOURS_LIMIT = NEIGHBOURS_LIMIT;
         Message.DEFAULT_TTL = DEFAULT_TTL;
         BasicGnutella.NPEERS = NPEERS;
+        BasicGnutella.JOIN_DELAY = JOIN_DELAY;
         Logger.LEVEL_BARRIER = LEVEL_BARRIER;
 
         // Start up test

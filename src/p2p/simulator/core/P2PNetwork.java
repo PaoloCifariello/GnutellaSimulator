@@ -13,6 +13,7 @@ import p2p.simulator.log.LogLevel;
 import p2p.simulator.log.Logger;
 
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class P2PNetwork {
     private ArrayList<AbstractPeer> connectedAbstractPeers;
@@ -29,9 +30,9 @@ public class P2PNetwork {
         return this.networkSimulator.getNumberOfMessages();
     }
 
-    public NetworkSimulator registerPeer(AbstractPeer abstractPeer) {
+    public NetworkSimulator registerPeer(AbstractPeer abstractPeer, ConcurrentLinkedQueue<Message> peerInMessageQueue) {
         this.connectedAbstractPeers.add(abstractPeer);
-        this.networkSimulator.registerPeer(abstractPeer.getPeerAddress(), abstractPeer);
+        this.networkSimulator.registerPeer(abstractPeer.getPeerAddress(), abstractPeer, peerInMessageQueue);
         Logger.log("Peer " + abstractPeer.getPeerAddress() + " has joined the network", LogLevel.OPTIONAL);
 
         return this.networkSimulator;

@@ -64,6 +64,3 @@ public class Message {
     }
 }
 
-enum MessageType {
-    PING, PONG
-}
