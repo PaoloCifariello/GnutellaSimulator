@@ -14,16 +14,18 @@ import p2p.simulator.log.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class AbstractPeer implements Runnable {
     protected String peerAddress;
-    protected ArrayList<String> neighbours;
+    protected HashSet<String> neighbours;
 
     public static int NEIGHBOURS_LIMIT = 5;
     public static long REFRESH_CACHE_TIME = 10000;
     public static long N_CACHED_PONG_SENT = NEIGHBOURS_LIMIT;
+    public static long MINIMUM_CACHE_SIZE = NEIGHBOURS_LIMIT;
 
     private P2PNetwork overlay;
     private Thread thread;
@@ -32,11 +34,9 @@ public abstract class AbstractPeer implements Runnable {
     protected NetworkSimulator network;
     protected HashMap<String, String> messageSources;
 
-
-
     public AbstractPeer() {
         this.peerAddress = UUID.randomUUID().toString();
-        this.neighbours = new ArrayList<>();
+        this.neighbours = new HashSet<>();
         this.messageSources = new HashMap<>();
         this.inMessageQueue = new ConcurrentLinkedQueue<>();
     }
@@ -87,26 +87,6 @@ public abstract class AbstractPeer implements Runnable {
         this.overlay = overlay;
         this.thread = new Thread(this);
         this.thread.start();
-    }
-
-    public void run() {
-        this.joinNetwork();
-
-        while (true) {
-
-            if (this.inMessageQueue.size() == 0) {
-                try {
-                    synchronized (this.inMessageQueue) {
-                        this.inMessageQueue.wait();
-                    }
-                } catch (InterruptedException ignored) { }    // simply exits from wait state
-            }
-
-            Message message;
-            while ((message = this.inMessageQueue.poll()) != null) {
-                this.receiveMessage(message);
-            }
-        }
     }
 
     abstract protected void receivePing(Message message);

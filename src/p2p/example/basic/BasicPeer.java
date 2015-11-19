@@ -13,12 +13,27 @@ import p2p.simulator.core.*;
 
 public class BasicPeer extends AbstractPeer {
 
+    protected void forwardPing(Message message) {
+        String pingingPeerAddress = message.getSource();
+        String originalPeerAddress = message.getPayload().getSource();
+
+        /* Then I forward the PING request to all my neighbours */
+        this.neighbours
+                .stream()
+                .filter(neighbourAddress -> !neighbourAddress.equals(pingingPeerAddress) && !!neighbourAddress.equals(originalPeerAddress))
+                .forEach(neighbourAddress -> { // if it's not the currently pinging peer, send him a Ping
+                    Message pingMessage = new Message(MessageType.PING, neighbourAddress, this.peerAddress, message.getTTL());
+                    pingMessage.setPayload(message.getPayload());
+                    this.sendMessage(pingMessage);
+                });
+    }
+
     protected void receivePing(Message message) {
         String pingingPeerAddress = message.getSource();
         String originalSource = message.getPayload().getSource();
 
         // If I can add more neighbours then I add the pinging peer and I send him back a PONG
-        if (this.neighbours.size() < this.NEIGHBOURS_LIMIT && !this.neighbours.contains(originalSource)) {
+        if (this.neighbours.size() < this.NEIGHBOURS_LIMIT) {
             this.neighbours.add(originalSource);
         }
 
@@ -28,16 +43,7 @@ public class BasicPeer extends AbstractPeer {
 
         /* Store source of the message used to send back PONG messages on the same path */
         this.messageSources.put(originalSource, message.getSource());
-
-        /* Then I forward the PING request to all my neighbours */
-        this.neighbours
-                .stream()
-                .filter(neighbourAddress -> !neighbourAddress.equals(pingingPeerAddress))
-                .forEach(neighbourAddress -> { // if it's not the currently pinging peer, send him a Ping
-                    Message pingMessage = new Message(MessageType.PING, neighbourAddress, this.peerAddress, message.getTTL());
-                    pingMessage.setPayload(message.getPayload());
-                    this.sendMessage(pingMessage);
-                });
+        this.forwardPing(message);
     }
 
     protected void receivePong(Message message) {
@@ -54,6 +60,26 @@ public class BasicPeer extends AbstractPeer {
             replyMessage.setPayload(message.getPayload());
             this.sendMessage(replyMessage);
 
+        }
+    }
+
+    public void run() {
+        this.joinNetwork();
+
+        while (true) {
+
+            if (this.inMessageQueue.size() == 0) {
+                try {
+                    synchronized (this.inMessageQueue) {
+                        this.inMessageQueue.wait();
+                    }
+                } catch (InterruptedException ignored) { }    // simply exits from wait state
+            }
+
+            Message message;
+            while ((message = this.inMessageQueue.poll()) != null) {
+                this.receiveMessage(message);
+            }
         }
     }
 }

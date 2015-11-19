@@ -9,25 +9,23 @@
 
 package p2p.example.cached;
 
-import p2p.simulator.core.AbstractPeer;
+import p2p.example.basic.BasicPeer;
 import p2p.simulator.core.Message;
 import p2p.simulator.core.MessagePayload;
 import p2p.simulator.core.MessageType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
-public class CachedPeer extends AbstractPeer {
-    HashSet<String> cachedPongs = new HashSet<>();
-    private long lastRefresh;
+public class CachedPeer extends BasicPeer {
+    protected HashSet<String> cachedPongs = new HashSet<>();
+    protected long lastRefresh;
 
     protected void receivePing(Message message) {
         String pingingPeerAddress = message.getSource();
         String originalSource = message.getPayload().getSource();
 
         /* If I can add more neighbours then I add the pinging peer and I send him back a PONG */
-        if (this.neighbours.size() < this.NEIGHBOURS_LIMIT && !this.neighbours.contains(originalSource)) {
+        if (this.neighbours.size() < this.NEIGHBOURS_LIMIT) {
             this.neighbours.add(originalSource);
         }
 
@@ -63,7 +61,7 @@ public class CachedPeer extends AbstractPeer {
         if (finalDestination.equals(this.peerAddress)) { // I am the destination of the PONG message
             /* Add the new neighbour only if it was not already present in my neighbours list
              * and if I have enough space to collect him */
-            if (this.neighbours.size() < NEIGHBOURS_LIMIT && !this.neighbours.contains(finalDestination)) { //we can accept another neighbour
+            if (this.neighbours.size() < NEIGHBOURS_LIMIT) { //we can accept another neighbour
                 this.neighbours.add(originalSource);
             }
 
@@ -78,6 +76,7 @@ public class CachedPeer extends AbstractPeer {
     }
 
     private void refreshCache() {
+        this.cachedPongs.clear();
         /* Send a PING message to all the neighbours in order to refresh the cache */
         this.neighbours
                 .stream()

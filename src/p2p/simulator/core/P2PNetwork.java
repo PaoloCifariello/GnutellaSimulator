@@ -33,7 +33,7 @@ public class P2PNetwork {
     public NetworkSimulator registerPeer(AbstractPeer abstractPeer, ConcurrentLinkedQueue<Message> peerInMessageQueue) {
         this.connectedAbstractPeers.add(abstractPeer);
         this.networkSimulator.registerPeer(abstractPeer.getPeerAddress(), abstractPeer, peerInMessageQueue);
-        Logger.log("Peer " + abstractPeer.getPeerAddress() + " has joined the network", LogLevel.OPTIONAL);
+        Logger.log("Peer " + abstractPeer.getPeerAddress() + " has joined the network", LogLevel.ESSENTIAL);
 
         return this.networkSimulator;
     }
