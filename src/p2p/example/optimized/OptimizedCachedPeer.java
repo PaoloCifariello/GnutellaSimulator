@@ -7,11 +7,14 @@
  * Paolo Cifariello
  */
 
-package p2p.example.basic;
+package p2p.example.optimized;
 
-import p2p.simulator.core.*;
+import p2p.simulator.core.AbstractPeer;
+import p2p.simulator.core.Message;
+import p2p.simulator.core.MessagePayload;
+import p2p.simulator.core.MessageType;
 
-public class BasicPeer extends AbstractPeer {
+public class OptimizedCachedPeer extends AbstractPeer {
 
     protected void receivePing(Message message) {
         String pingingPeerAddress = message.getSource();
@@ -20,16 +23,15 @@ public class BasicPeer extends AbstractPeer {
         // If I can add more neighbours then I add the pinging peer and I send him back a PONG
         if (this.neighbours.size() < this.NEIGHBOURS_LIMIT && !this.neighbours.contains(originalSource)) {
             this.neighbours.add(originalSource);
+            Message response = new Message(MessageType.PONG, pingingPeerAddress, this.peerAddress);
+            response.setPayload(new MessagePayload(this.peerAddress, originalSource));
+            this.sendMessage(response);
         }
 
-        Message response = new Message(MessageType.PONG, pingingPeerAddress, this.peerAddress);
-        response.setPayload(new MessagePayload(this.peerAddress, originalSource));
-        this.sendMessage(response);
-
-        /* Store source of the message used to send back PONG messages on the same path */
+        // Store source of the message used to send back PONG messages
         this.messageSources.put(originalSource, message.getSource());
 
-        /* Then I forward the PING request to all my neighbours */
+        // Then I forward the PING request to all my neighbours
         this.neighbours
                 .stream()
                 .filter(neighbourAddress -> !neighbourAddress.equals(pingingPeerAddress))

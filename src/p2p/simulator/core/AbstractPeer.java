@@ -21,11 +21,13 @@ public abstract class AbstractPeer implements Runnable {
     protected String peerAddress;
     protected ArrayList<String> neighbours;
 
-    public static int NEIGHBOURS_LIMIT = 5; // default value
+    public static int NEIGHBOURS_LIMIT = 5;
+    public static long REFRESH_CACHE_TIME = 10000;
+    public static long N_CACHED_PONG_SENT = NEIGHBOURS_LIMIT;
 
     private P2PNetwork overlay;
     private Thread thread;
-    private ConcurrentLinkedQueue<Message> inMessageQueue;
+    protected final ConcurrentLinkedQueue<Message> inMessageQueue;
 
     protected NetworkSimulator network;
     protected HashMap<String, String> messageSources;
@@ -62,7 +64,7 @@ public abstract class AbstractPeer implements Runnable {
         this.network.sendMessage(message);
     }
 
-    public void receiveMessage(Message message) {
+    protected void receiveMessage(Message message) {
         // I have to check if the message has expired its TTL
         if (message.isExpired()) { // TTL = 0, ignore the request
             Logger.log("Message received by peer: " + this.peerAddress + " has been dropped, expired TTL", LogLevel.OPTIONAL);
@@ -97,7 +99,7 @@ public abstract class AbstractPeer implements Runnable {
                     synchronized (this.inMessageQueue) {
                         this.inMessageQueue.wait();
                     }
-                } catch (InterruptedException e) { }    // simply exits from wait state
+                } catch (InterruptedException ignored) { }    // simply exits from wait state
             }
 
             Message message;

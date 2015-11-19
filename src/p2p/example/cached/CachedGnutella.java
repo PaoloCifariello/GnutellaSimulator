@@ -10,17 +10,32 @@
 package p2p.example.cached;
 
 
+import p2p.example.basic.BasicGnutella;
+import p2p.simulator.core.AbstractPeer;
 import p2p.simulator.core.P2PNetwork;
 
-public class CachedGnutella {
-    public static void test() {
+public class CachedGnutella extends BasicGnutella {
 
-        P2PNetwork overlay = new P2PNetwork();
+    public static void test(int NPEERS, long JOIN_DELAY) {
+        CachedGnutella.NPEERS = NPEERS;
+        CachedGnutella.JOIN_DELAY = JOIN_DELAY;
+        new Thread(new CachedGnutella()).start();
+    }
 
-        //AbstractPeer peer = new AbstractPeer();
-        //peer.joinNetwork(overlay);
+    public static int getNumberOfMessages() {
+        return overlay.getNumberOfMessages();
+    }
 
-        System.out.println("asd");
+    @Override
+    public void run() {
+        overlay = new P2PNetwork();
 
+        for (int i = 0; i < NPEERS; i++) {
+            AbstractPeer newPeer = new CachedPeer();
+            newPeer.start(overlay);
+            try {
+                Thread.sleep(JOIN_DELAY);
+            } catch (InterruptedException e) { }
+        }
     }
 }
