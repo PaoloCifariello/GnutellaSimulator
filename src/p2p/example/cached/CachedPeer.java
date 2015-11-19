@@ -20,6 +20,7 @@ import java.util.HashSet;
 
 public class CachedPeer extends AbstractPeer {
     HashSet<String> cachedPongs = new HashSet<>();
+    private long lastRefresh;
 
     protected void receivePing(Message message) {
         String pingingPeerAddress = message.getSource();
@@ -85,30 +86,32 @@ public class CachedPeer extends AbstractPeer {
                     pingMessage.setPayload(new MessagePayload(this.peerAddress));
                     this.sendMessage(pingMessage);
                 });
+        this.lastRefresh = System.currentTimeMillis();
     }
 
     public void run() {
         this.joinNetwork();
+        this.refreshCache();
+
 
         while (true) {
-
             if (this.inMessageQueue.size() == 0) {
                 try {
                     synchronized (this.inMessageQueue) {
-                        this.inMessageQueue.wait(REFRESH_CACHE_TIME);
+                        this.inMessageQueue.wait(500);
                     }
-                } catch (InterruptedException ignored) {
-                }    // simply exits from wait state
-            }
-
-            if (this.inMessageQueue.size() == 0) {
-                /* Refresh cached PONG messages if 10s have passed */
-                this.refreshCache();
+                } catch (InterruptedException ignored) { }    // simply exits from wait state
             }
 
             Message message;
             while ((message = this.inMessageQueue.poll()) != null) {
                 this.receiveMessage(message);
+            }
+
+
+            if (System.currentTimeMillis() - this.lastRefresh >=  REFRESH_CACHE_TIME) {
+                /* Refresh cached PONG messages */
+                this.refreshCache();
             }
         }
     }
