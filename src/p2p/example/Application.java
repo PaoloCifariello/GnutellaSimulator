@@ -19,39 +19,61 @@ import p2p.simulator.core.NetworkSimulator;
 import p2p.simulator.log.LogLevel;
 import p2p.simulator.log.Logger;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+
 
 public class Application {
     /* # of total peers in the network */
-    static final int NPEERS = 100;
-    /* delay between messages sent on the network */
-    static final int NETWORK_DELAY = 1;
-    /* max # of neighbours for each peer */
-    static final int NEIGHBOURS_LIMIT = 5;
-    /* default TTL of sent messages */
-    static final int DEFAULT_TTL = 4;
+    static int N_PEERS = 100;
     /* prints every n seconds how many messages have been forwarded */
-    static final long DEBUG_OUTPUT_TIME = 1000;
-    /* Every n seconds of inactivity a peer refresh its own cache */
-    static final long REFRESH_CACHE_TIME = 10000;
-    /* how many PONG messages are sent back on PING message (only for cached peers) */
-    static final long N_CACHED_PONG_SENT = NEIGHBOURS_LIMIT;
+    static long DEBUG_OUTPUT_TIME = 1000;
     /* n milliseconds between peers join the network  */
-    static final long JOIN_DELAY = 0;
+    static long JOIN_DELAY = 0;
     /* log level (ESSENTIAL for only important logs, OPTIONAL for all)  */
     static final LogLevel LEVEL_BARRIER = LogLevel.ESSENTIAL;
 
     public static void main(String[] args) {
-        /* configuration variables */
-        NetworkSimulator.NETWORK_DELAY = NETWORK_DELAY;
-        AbstractPeer.NEIGHBOURS_LIMIT = NEIGHBOURS_LIMIT;
-        AbstractPeer.REFRESH_CACHE_TIME = REFRESH_CACHE_TIME;
-        AbstractPeer.N_CACHED_PONG_SENT = N_CACHED_PONG_SENT;
-        Message.DEFAULT_TTL = DEFAULT_TTL;
-        Logger.LEVEL_BARRIER = LEVEL_BARRIER;
 
+        setProperties();
         String testName = "cached"; /* or cached or optimized */
-
         test(testName);
+    }
+
+    private static void setProperties() {
+        Properties prop = new Properties();
+        InputStream input = null;
+
+        try {
+            input = new FileInputStream("config.properties");
+            prop.load(input);
+
+            Logger.LEVEL_BARRIER = LEVEL_BARRIER;
+
+            /* configuration variables */
+            Application.N_PEERS = Integer.parseInt(prop.getProperty("N_PEERS"));
+            NetworkSimulator.NETWORK_DELAY = Long.parseLong(prop.getProperty("NETWORK_DELAY"));
+            AbstractPeer.NEIGHBOURS_LIMIT = Integer.parseInt(prop.getProperty("NEIGHBOURS_LIMIT"));
+            Message.DEFAULT_TTL = Long.parseLong(prop.getProperty("DEFAULT_TTL"));
+            Application.DEBUG_OUTPUT_TIME = Long.parseLong(prop.getProperty("DEBUG_OUTPUT_TIME"));
+            AbstractPeer.REFRESH_CACHE_TIME = Long.parseLong(prop.getProperty("REFRESH_CACHE_TIME"));
+            AbstractPeer.N_CACHED_PONG_SENT = Long.parseLong(prop.getProperty("N_CACHED_PONG_SENT"));
+            Application.JOIN_DELAY = Long.parseLong(prop.getProperty("JOIN_DELAY"));
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private static void test(String testName) {
@@ -59,7 +81,7 @@ public class Application {
             case "basic":
             {
                 /* Start up test */
-                BasicGnutella.test(NPEERS, JOIN_DELAY);
+                BasicGnutella.test(N_PEERS, JOIN_DELAY);
 
                 while (true) {
                     try {
@@ -69,13 +91,13 @@ public class Application {
                     }
 
                     int nmessages = BasicGnutella.getNumberOfMessages();
-                    Logger.log("Using basic PING-PONG there have been " + nmessages + " messages exchanged between the " + NPEERS + " peers", LogLevel.ESSENTIAL);
+                    Logger.log("Using basic PING-PONG there have been " + nmessages + " messages exchanged between the " + N_PEERS + " peers", LogLevel.ESSENTIAL);
                 }
             }
             case "cached":
             {
                 /* Start up test */
-                CachedGnutella.test(NPEERS, JOIN_DELAY);
+                CachedGnutella.test(N_PEERS, JOIN_DELAY);
 
                 while (true) {
                     try {
@@ -85,13 +107,13 @@ public class Application {
                     }
 
                     int nmessages = CachedGnutella.getNumberOfMessages();
-                    Logger.log("Using basic PING-PONG there have been " + nmessages + " messages exchanged between the " + NPEERS + " peers", LogLevel.ESSENTIAL);
+                    Logger.log("Using basic PING-PONG there have been " + nmessages + " messages exchanged between the " + N_PEERS + " peers", LogLevel.ESSENTIAL);
                 }
             }
             case "optimized":
             {
                 /* Start up test */
-                OptimizedCachedGnutella.test(NPEERS, JOIN_DELAY);
+                OptimizedCachedGnutella.test(N_PEERS, JOIN_DELAY);
 
                 while (true) {
                     try {
@@ -101,7 +123,7 @@ public class Application {
                     }
 
                     int nmessages = OptimizedCachedGnutella.getNumberOfMessages();
-                    Logger.log("Using basic PING-PONG there have been " + nmessages + " messages exchanged between the " + NPEERS + " peers", LogLevel.ESSENTIAL);
+                    Logger.log("Using basic PING-PONG there have been " + nmessages + " messages exchanged between the " + N_PEERS + " peers", LogLevel.ESSENTIAL);
                 }
             }
 
