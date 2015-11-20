@@ -16,6 +16,7 @@ import p2p.example.optimized.OptimizedCachedGnutella;
 import p2p.simulator.core.AbstractPeer;
 import p2p.simulator.core.Message;
 import p2p.simulator.core.NetworkSimulator;
+import p2p.simulator.core.P2PNetwork;
 import p2p.simulator.log.LogLevel;
 import p2p.simulator.log.Logger;
 
@@ -34,7 +35,7 @@ public class Application {
     /* n milliseconds between peers join the network  */
     static long JOIN_DELAY;
     /* log level (ESSENTIAL for only important logs, OPTIONAL for all)  */
-    static final LogLevel LEVEL_BARRIER = LogLevel.ESSENTIAL;
+    static final LogLevel LEVEL_BARRIER = LogLevel.OPTIONAL;
 
     public static void main(String[] args) {
 
@@ -63,6 +64,7 @@ public class Application {
             AbstractPeer.REFRESH_CACHE_TIME = Long.parseLong(prop.getProperty("REFRESH_CACHE_TIME"));
             AbstractPeer.N_CACHED_PONG_SENT = Long.parseLong(prop.getProperty("N_CACHED_PONG_SENT"));
             Application.JOIN_DELAY = Long.parseLong(prop.getProperty("JOIN_DELAY"));
+            P2PNetwork.BOOTSTRAP_MAX_PEERS_KNOWN = Long.parseLong(prop.getProperty("BOOTSTRAP_MAX_PEERS_KNOWN"));
 
         } catch (IOException ex) {
             ex.printStackTrace();

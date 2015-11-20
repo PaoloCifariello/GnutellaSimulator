@@ -18,7 +18,7 @@ import java.util.HashSet;
 
 public class CachedPeer extends BasicPeer {
     protected HashSet<String> cachedPongs = new HashSet<>();
-    protected long lastRefresh;
+    protected long lastRefresh = System.currentTimeMillis();
 
     protected void receivePing(Message message) {
         String pingingPeerAddress = message.getSource();
@@ -29,21 +29,18 @@ public class CachedPeer extends BasicPeer {
             this.neighbours.add(originalSource);
         }
 
-        /* send the PONG message back */
-        Message response = new Message(MessageType.PONG, pingingPeerAddress, this.peerAddress);
-        response.setPayload(new MessagePayload(this.peerAddress, originalSource));
-        this.sendMessage(response);
-
         // Store source of the message used to send back PONG messages
         this.messageSources.put(originalSource, message.getSource());
+
+        /* send the PONG message back */
+        Message response = new Message(MessageType.PONG, pingingPeerAddress, this.peerAddress);
+        MessagePayload mp = new MessagePayload(this.peerAddress, originalSource);
 
         int sentPong = 0;
 
         for (String cachedPongSource: cachedPongs) {
             if (!cachedPongSource.equals(originalSource)) {
-                Message cachedResponse = new Message(MessageType.PONG, pingingPeerAddress, this.peerAddress);
-                cachedResponse.setPayload(new MessagePayload(cachedPongSource, originalSource));
-                this.sendMessage(cachedResponse);
+                mp.addOtherSource(cachedPongSource);
                 sentPong++;
 
                 /* we have already sent the maximum number of PONG messages */
@@ -52,6 +49,9 @@ public class CachedPeer extends BasicPeer {
                 }
             }
         }
+
+        response.setPayload(mp);
+        this.sendMessage(response);
     }
 
     protected void receivePong(Message message) {
@@ -67,6 +67,8 @@ public class CachedPeer extends BasicPeer {
 
             /* Then I store in the peer cache the IP of the PONG message source */
             this.cachedPongs.add(originalSource);
+            this.cachedPongs.addAll(message.getPayload().getOtherSources());
+
         } else { // Received PONG, but I am not the final destination (need to forward it on the backward path
             String backwardPathAddress = this.messageSources.get(finalDestination);
             Message replyMessage = new Message(MessageType.PONG, backwardPathAddress, this.peerAddress, message.getTTL());
@@ -78,20 +80,18 @@ public class CachedPeer extends BasicPeer {
     private void refreshCache() {
         this.cachedPongs.clear();
         /* Send a PING message to all the neighbours in order to refresh the cache */
-        this.neighbours
-                .stream()
-                .forEach(neighbourAddress -> { // if it's not the currently pinging peer, send him a Ping
-                    Message pingMessage = new Message(MessageType.PING, neighbourAddress, this.peerAddress);
-                    pingMessage.setPayload(new MessagePayload(this.peerAddress));
-                    this.sendMessage(pingMessage);
-                });
+
+        for (String neighbourAddress: this.neighbours) {
+            Message pingMessage = new Message(MessageType.PING, neighbourAddress, this.peerAddress);
+            pingMessage.setPayload(new MessagePayload(this.peerAddress));
+            this.sendMessage(pingMessage);
+        }
+
         this.lastRefresh = System.currentTimeMillis();
     }
 
     public void run() {
         this.joinNetwork();
-        this.refreshCache();
-
 
         while (true) {
             if (this.inMessageQueue.size() == 0) {

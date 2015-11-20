@@ -31,8 +31,7 @@ public class OptimizedCachedPeer extends CachedPeer {
 
         /* send the PONG message back */
         Message response = new Message(MessageType.PONG, pingingPeerAddress, this.peerAddress);
-        response.setPayload(new MessagePayload(this.peerAddress, originalSource));
-        this.sendMessage(response);
+        MessagePayload mp = new MessagePayload(this.peerAddress, originalSource);
 
         // Store source of the message used to send back PONG messages
         this.messageSources.put(originalSource, message.getSource());
@@ -44,9 +43,7 @@ public class OptimizedCachedPeer extends CachedPeer {
 
             for (String cachedPongSource: cachedPongs) {
                 if (!cachedPongSource.equals(originalSource)) {
-                    Message cachedResponse = new Message(MessageType.PONG, pingingPeerAddress, this.peerAddress);
-                    cachedResponse.setPayload(new MessagePayload(cachedPongSource, originalSource));
-                    this.sendMessage(cachedResponse);
+                    mp.addOtherSource(cachedPongSource);
                     sentPong++;
 
                     /* we have already sent the maximum number of PONG messages */
@@ -57,6 +54,8 @@ public class OptimizedCachedPeer extends CachedPeer {
             }
         }
 
+        response.setPayload(mp);
+        this.sendMessage(response);
     }
 
     protected void receivePong(Message message) {
@@ -78,6 +77,11 @@ public class OptimizedCachedPeer extends CachedPeer {
         /* Add the PONG message to the cache */
         this.cachedPongs.add(originalSource);
         this.timestamps.put(originalSource, System.currentTimeMillis());
+
+        for (String cachedPongSource: message.getPayload().getOtherSources()) {
+            this.cachedPongs.add(cachedPongSource);
+            this.timestamps.put(cachedPongSource, System.currentTimeMillis());
+        }
     }
 
     private void refreshCache() {

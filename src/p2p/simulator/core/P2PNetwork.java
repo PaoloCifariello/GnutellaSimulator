@@ -13,9 +13,13 @@ import p2p.simulator.log.LogLevel;
 import p2p.simulator.log.Logger;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class P2PNetwork {
+    public static long BOOTSTRAP_MAX_PEERS_KNOWN = 1;
+
     private ArrayList<AbstractPeer> connectedAbstractPeers;
     private NetworkSimulator networkSimulator;
 
@@ -32,19 +36,22 @@ public class P2PNetwork {
 
     public NetworkSimulator registerPeer(AbstractPeer abstractPeer, ConcurrentLinkedQueue<Message> peerInMessageQueue) {
         this.connectedAbstractPeers.add(abstractPeer);
-        this.networkSimulator.registerPeer(abstractPeer.getPeerAddress(), abstractPeer, peerInMessageQueue);
-        Logger.log("Peer " + abstractPeer.getPeerAddress() + " has joined the network", LogLevel.ESSENTIAL);
+        this.networkSimulator.registerPeer(abstractPeer.getPeerAddress(), peerInMessageQueue);
+        Logger.log("Peer " + abstractPeer.getPeerAddress() + " has joined the network", LogLevel.OPTIONAL);
 
         return this.networkSimulator;
     }
 
-    public String getRandomPeerAddress() {
-        String ret = null;
+    public HashSet<String> getRandomPeerAddress() {
+        HashSet<String> ret = new HashSet<>();
 
         if (this.connectedAbstractPeers.size() > 0) {
-            int randomIndex = (int) (Math.random() * this.connectedAbstractPeers.size());
-            AbstractPeer randomAbstractPeer = this.connectedAbstractPeers.get(randomIndex);
-            ret = randomAbstractPeer.getPeerAddress();
+            Random randomGenerator = new Random();
+
+            for (int i = 0; i < BOOTSTRAP_MAX_PEERS_KNOWN; i++) {
+                int index = randomGenerator.nextInt(this.connectedAbstractPeers.size());
+                ret.add(this.connectedAbstractPeers.get(index).getPeerAddress());
+            }
         }
 
         return ret;

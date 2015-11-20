@@ -18,14 +18,14 @@ public class BasicPeer extends AbstractPeer {
         String originalPeerAddress = message.getPayload().getSource();
 
         /* Then I forward the PING request to all my neighbours */
-        this.neighbours
-                .stream()
-                .filter(neighbourAddress -> !neighbourAddress.equals(pingingPeerAddress) && !!neighbourAddress.equals(originalPeerAddress))
-                .forEach(neighbourAddress -> { // if it's not the currently pinging peer, send him a Ping
-                    Message pingMessage = new Message(MessageType.PING, neighbourAddress, this.peerAddress, message.getTTL());
-                    pingMessage.setPayload(message.getPayload());
-                    this.sendMessage(pingMessage);
-                });
+        for (String neighbourAddress: this.neighbours) {
+            if (!neighbourAddress.equals(pingingPeerAddress) && !neighbourAddress.equals(originalPeerAddress)) {
+                Message pingMessage = new Message(MessageType.PING, neighbourAddress, this.peerAddress, message.getTTL());
+                pingMessage.setPayload(message.getPayload());
+                this.sendMessage(pingMessage);
+            }
+
+        }
     }
 
     protected void receivePing(Message message) {

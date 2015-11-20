@@ -45,7 +45,7 @@ public class NetworkSimulator implements Runnable {
         }
     }
 
-    public void registerPeer(String peerAddress, AbstractPeer abstractPeer, ConcurrentLinkedQueue<Message> peerInMessageQueue) {
+    public void registerPeer(String peerAddress, ConcurrentLinkedQueue<Message> peerInMessageQueue) {
         this.peerAddressMap.put(peerAddress, peerInMessageQueue);
     }
 

@@ -47,12 +47,12 @@ public abstract class AbstractPeer implements Runnable {
 
     public void joinNetwork() {
         // get a random peer address from the network
-        String randomPeerAddress = this.overlay.getRandomPeerAddress();
+        HashSet<String> randomPeerAddresses = this.overlay.getRandomPeerAddress();
         // register on the network (just for simulation purposes)
         this.network = overlay.registerPeer(this, this.inMessageQueue);
 
         // add the new peer to the list of neighbours
-        if (randomPeerAddress != null) {
+        for (String randomPeerAddress: randomPeerAddresses) {
             this.neighbours.add(randomPeerAddress);
             Message message = new Message(MessageType.PING, randomPeerAddress, this.peerAddress);
             message.setPayload(new MessagePayload(this.peerAddress));
