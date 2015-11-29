@@ -7,13 +7,12 @@
  * Paolo Cifariello
  */
 
-package p2p.example.optimized;
+package p2p.simulation.optimized;
 
-import p2p.example.cached.CachedPeer;
-import p2p.simulator.core.AbstractPeer;
-import p2p.simulator.core.Message;
-import p2p.simulator.core.MessagePayload;
-import p2p.simulator.core.MessageType;
+import p2p.simulation.cached.CachedPeer;
+import p2p.core.Message;
+import p2p.core.MessagePayload;
+import p2p.core.MessageType;
 
 import java.util.HashMap;
 

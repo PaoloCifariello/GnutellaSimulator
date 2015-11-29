@@ -7,7 +7,7 @@
  * Paolo Cifariello
  */
 
-package p2p.simulator.core;
+package p2p.core;
 
 import java.util.HashSet;
 

@@ -1,4 +1,4 @@
-package p2p.simulator.core;
+package p2p.core;
 
 public enum MessageType {
     PING, PONG

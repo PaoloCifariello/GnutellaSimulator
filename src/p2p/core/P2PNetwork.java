@@ -7,10 +7,10 @@
  * Paolo Cifariello
  */
 
-package p2p.simulator.core;
+package p2p.core;
 
-import p2p.simulator.log.LogLevel;
-import p2p.simulator.log.Logger;
+import p2p.core.log.LogLevel;
+import p2p.core.log.Logger;
 
 import java.util.ArrayList;
 import java.util.HashSet;

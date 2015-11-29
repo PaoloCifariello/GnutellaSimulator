@@ -7,22 +7,19 @@
  * Paolo Cifariello
  */
 
-package p2p.example.basic;
+package p2p.simulation.cached;
 
 
-import p2p.simulator.core.AbstractPeer;
-import p2p.simulator.core.P2PNetwork;
+import p2p.simulation.basic.BasicGnutella;
+import p2p.core.AbstractPeer;
+import p2p.core.P2PNetwork;
 
-public class BasicGnutella implements Runnable {
-    public static int NPEERS;
-    public static long JOIN_DELAY;
-
-    protected static P2PNetwork overlay;
+public class CachedGnutella extends BasicGnutella {
 
     public static void test(int NPEERS, long JOIN_DELAY) {
-        BasicGnutella.NPEERS = NPEERS;
-        BasicGnutella.JOIN_DELAY = JOIN_DELAY;
-        new Thread(new BasicGnutella()).start();
+        CachedGnutella.NPEERS = NPEERS;
+        CachedGnutella.JOIN_DELAY = JOIN_DELAY;
+        new Thread(new CachedGnutella()).start();
     }
 
     public static int getNumberOfMessages() {
@@ -34,7 +31,7 @@ public class BasicGnutella implements Runnable {
         overlay = new P2PNetwork();
 
         for (int i = 0; i < NPEERS; i++) {
-            AbstractPeer newPeer = new BasicPeer();
+            AbstractPeer newPeer = new CachedPeer();
             newPeer.start(overlay);
             try {
                 Thread.sleep(JOIN_DELAY);

@@ -7,7 +7,7 @@
  * Paolo Cifariello
  */
 
-package p2p.simulator.core;
+package p2p.core;
 
 public class Message {
     private final String destination;

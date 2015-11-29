@@ -7,7 +7,7 @@
  * Paolo Cifariello
  */
 
-package p2p.simulator.log;
+package p2p.core.log;
 
 public class Logger {
     public static LogLevel LEVEL_BARRIER = LogLevel.ESSENTIAL; // by default it shows only ESSENTIAL logs

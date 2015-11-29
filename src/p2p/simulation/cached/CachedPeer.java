@@ -7,12 +7,12 @@
  * Paolo Cifariello
  */
 
-package p2p.example.cached;
+package p2p.simulation.cached;
 
-import p2p.example.basic.BasicPeer;
-import p2p.simulator.core.Message;
-import p2p.simulator.core.MessagePayload;
-import p2p.simulator.core.MessageType;
+import p2p.simulation.basic.BasicPeer;
+import p2p.core.Message;
+import p2p.core.MessagePayload;
+import p2p.core.MessageType;
 
 import java.util.HashSet;
 

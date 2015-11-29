@@ -7,18 +7,18 @@
  * Paolo Cifariello
  */
 
-package p2p.example;
+package p2p.simulation;
 
 
-import p2p.example.basic.BasicGnutella;
-import p2p.example.cached.CachedGnutella;
-import p2p.example.optimized.OptimizedCachedGnutella;
-import p2p.simulator.core.AbstractPeer;
-import p2p.simulator.core.Message;
-import p2p.simulator.core.NetworkSimulator;
-import p2p.simulator.core.P2PNetwork;
-import p2p.simulator.log.LogLevel;
-import p2p.simulator.log.Logger;
+import p2p.simulation.basic.BasicGnutella;
+import p2p.simulation.cached.CachedGnutella;
+import p2p.simulation.optimized.OptimizedCachedGnutella;
+import p2p.core.AbstractPeer;
+import p2p.core.Message;
+import p2p.core.NetworkSimulator;
+import p2p.core.P2PNetwork;
+import p2p.core.log.LogLevel;
+import p2p.core.log.Logger;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,7 +35,7 @@ public class Application {
     /* n milliseconds between peers join the network  */
     static long JOIN_DELAY;
     /* log level (ESSENTIAL for only important logs, OPTIONAL for all)  */
-    static final LogLevel LEVEL_BARRIER = LogLevel.OPTIONAL;
+    static final LogLevel LEVEL_BARRIER = LogLevel.ESSENTIAL;
 
     public static void main(String[] args) {
 

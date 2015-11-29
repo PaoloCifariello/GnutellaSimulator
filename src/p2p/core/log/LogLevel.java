@@ -1,4 +1,4 @@
-package p2p.simulator.log;
+package p2p.core.log;
 
 public enum LogLevel {
     OPTIONAL,   // ordinal value 0, not fundamental

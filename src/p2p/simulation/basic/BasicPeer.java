@@ -7,9 +7,12 @@
  * Paolo Cifariello
  */
 
-package p2p.example.basic;
+package p2p.simulation.basic;
 
-import p2p.simulator.core.*;
+import p2p.core.AbstractPeer;
+import p2p.core.Message;
+import p2p.core.MessagePayload;
+import p2p.core.MessageType;
 
 public class BasicPeer extends AbstractPeer {
 
