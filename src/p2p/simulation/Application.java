@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.util.Properties;
 
 
-
 public class Application {
     /* # of total peers in the network */
     static int N_PEERS;
@@ -40,7 +39,7 @@ public class Application {
     public static void main(String[] args) {
 
         setProperties();
-        String testName = "optimized"; /* or cached or optimized */
+        String testName = "optimized"; /* or "cached" or "optimized" */
         test(testName);
     }
 

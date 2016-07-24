@@ -24,7 +24,7 @@ public class OptimizedCachedPeer extends CachedPeer {
         String originalSource = message.getPayload().getSource();
 
         /* If I can add more neighbours then I add the pinging peer and I send him back a PONG */
-        if (this.neighbours.size() < this.NEIGHBOURS_LIMIT && !this.neighbours.contains(originalSource)) {
+        if (this.neighbours.size() < NEIGHBOURS_LIMIT && !this.neighbours.contains(originalSource)) {
             this.neighbours.add(originalSource);
         }
 
