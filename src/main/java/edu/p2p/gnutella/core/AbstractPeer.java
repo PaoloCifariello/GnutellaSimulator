@@ -7,10 +7,11 @@
  * Paolo Cifariello
  */
 
-package p2p.core;
+package edu.p2p.gnutella.core;
 
-import p2p.core.log.LogLevel;
-import p2p.core.log.Logger;
+
+import edu.p2p.gnutella.core.log.LogLevel;
+import edu.p2p.gnutella.core.log.Logger;
 
 import java.util.HashMap;
 import java.util.HashSet;

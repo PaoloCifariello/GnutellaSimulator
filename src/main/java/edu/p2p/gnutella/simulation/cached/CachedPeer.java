@@ -7,48 +7,45 @@
  * Paolo Cifariello
  */
 
-package p2p.simulation.optimized;
+package edu.p2p.gnutella.simulation.cached;
 
-import p2p.simulation.cached.CachedPeer;
-import p2p.core.Message;
-import p2p.core.MessagePayload;
-import p2p.core.MessageType;
+import edu.p2p.gnutella.simulation.basic.BasicPeer;
+import edu.p2p.gnutella.core.Message;
+import edu.p2p.gnutella.core.MessagePayload;
+import edu.p2p.gnutella.core.MessageType;
 
-import java.util.HashMap;
+import java.util.HashSet;
 
-public class OptimizedCachedPeer extends CachedPeer {
-    protected HashMap<String, Long> timestamps = new HashMap<>();
+public class CachedPeer extends BasicPeer {
+    protected HashSet<String> cachedPongs = new HashSet<>();
+    protected long lastRefresh = System.currentTimeMillis();
 
     protected void receivePing(Message message) {
         String pingingPeerAddress = message.getSource();
         String originalSource = message.getPayload().getSource();
 
         /* If I can add more neighbours then I add the pinging peer and I send him back a PONG */
-        if (this.neighbours.size() < NEIGHBOURS_LIMIT && !this.neighbours.contains(originalSource)) {
+        if (this.neighbours.size() < NEIGHBOURS_LIMIT) {
             this.neighbours.add(originalSource);
         }
+
+        // Store source of the message used to send back PONG messages
+        this.messageSources.put(originalSource, message.getSource());
 
         /* send the PONG message back */
         Message response = new Message(MessageType.PONG, pingingPeerAddress, this.peerAddress);
         MessagePayload mp = new MessagePayload(this.peerAddress, originalSource);
 
-        // Store source of the message used to send back PONG messages
-        this.messageSources.put(originalSource, message.getSource());
+        int sentPong = 0;
 
-        if (cachedPongs.size() < MINIMUM_CACHE_SIZE) {
-            this.forwardPing(message);
-        } else {
-            int sentPong = 0;
+        for (String cachedPongSource: cachedPongs) {
+            if (!cachedPongSource.equals(originalSource)) {
+                mp.addOtherSource(cachedPongSource);
+                sentPong++;
 
-            for (String cachedPongSource: cachedPongs) {
-                if (!cachedPongSource.equals(originalSource)) {
-                    mp.addOtherSource(cachedPongSource);
-                    sentPong++;
-
-                    /* we have already sent the maximum number of PONG messages */
-                    if (sentPong >= N_CACHED_PONG_SENT) {
-                        break;
-                    }
+                /* we have already sent the maximum number of PONG messages */
+                if (sentPong >= N_CACHED_PONG_SENT) {
+                    break;
                 }
             }
         }
@@ -61,10 +58,16 @@ public class OptimizedCachedPeer extends CachedPeer {
         String finalDestination = message.getPayload().getDestination();
         String originalSource = message.getPayload().getSource();
 
-        if (finalDestination.equals(this.peerAddress)) { /* I am the destination of the PONG message */
-            if (this.neighbours.size() < NEIGHBOURS_LIMIT) { /*we can accept another neighbour */
+        if (finalDestination.equals(this.peerAddress)) { // I am the destination of the PONG message
+            /* Add the new neighbour only if it was not already present in my neighbours list
+             * and if I have enough space to collect him */
+            if (this.neighbours.size() < NEIGHBOURS_LIMIT) { //we can accept another neighbour
                 this.neighbours.add(originalSource);
             }
+
+            /* Then I store in the peer cache the IP of the PONG message source */
+            this.cachedPongs.add(originalSource);
+            this.cachedPongs.addAll(message.getPayload().getOtherSources());
 
         } else { // Received PONG, but I am not the final destination (need to forward it on the backward path
             String backwardPathAddress = this.messageSources.get(finalDestination);
@@ -72,33 +75,16 @@ public class OptimizedCachedPeer extends CachedPeer {
             replyMessage.setPayload(message.getPayload());
             this.sendMessage(replyMessage);
         }
-
-        /* Add the PONG message to the cache */
-        this.cachedPongs.add(originalSource);
-        this.timestamps.put(originalSource, System.currentTimeMillis());
-
-        for (String cachedPongSource: message.getPayload().getOtherSources()) {
-            this.cachedPongs.add(cachedPongSource);
-            this.timestamps.put(cachedPongSource, System.currentTimeMillis());
-        }
     }
 
     private void refreshCache() {
-        String toDelete = null;
-        long oldestTimestamp = Long.MAX_VALUE;
+        this.cachedPongs.clear();
+        /* Send a PING message to all the neighbours in order to refresh the cache */
 
-        for (String cachedPongSource: this.cachedPongs) {
-            long timestamp = this.timestamps.get(cachedPongSource);
-
-            if (timestamp < oldestTimestamp) {
-                toDelete = cachedPongSource;
-                oldestTimestamp = timestamp;
-            }
-        }
-
-        if (toDelete != null) {
-            this.cachedPongs.remove(toDelete);
-            this.timestamps.remove(toDelete);
+        for (String neighbourAddress: this.neighbours) {
+            Message pingMessage = new Message(MessageType.PING, neighbourAddress, this.peerAddress);
+            pingMessage.setPayload(new MessagePayload(this.peerAddress));
+            this.sendMessage(pingMessage);
         }
 
         this.lastRefresh = System.currentTimeMillis();

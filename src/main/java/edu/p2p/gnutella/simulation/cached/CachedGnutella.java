@@ -7,12 +7,12 @@
  * Paolo Cifariello
  */
 
-package p2p.simulation.cached;
+package edu.p2p.gnutella.simulation.cached;
 
 
-import p2p.simulation.basic.BasicGnutella;
-import p2p.core.AbstractPeer;
-import p2p.core.P2PNetwork;
+import edu.p2p.gnutella.simulation.basic.BasicGnutella;
+import edu.p2p.gnutella.core.AbstractPeer;
+import edu.p2p.gnutella.core.P2PNetwork;
 
 public class CachedGnutella extends BasicGnutella {
 

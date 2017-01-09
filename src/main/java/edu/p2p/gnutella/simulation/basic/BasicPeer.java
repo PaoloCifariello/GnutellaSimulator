@@ -7,12 +7,12 @@
  * Paolo Cifariello
  */
 
-package p2p.simulation.basic;
+package edu.p2p.gnutella.simulation.basic;
 
-import p2p.core.AbstractPeer;
-import p2p.core.Message;
-import p2p.core.MessagePayload;
-import p2p.core.MessageType;
+import edu.p2p.gnutella.core.AbstractPeer;
+import edu.p2p.gnutella.core.Message;
+import edu.p2p.gnutella.core.MessagePayload;
+import edu.p2p.gnutella.core.MessageType;
 
 public class BasicPeer extends AbstractPeer {
 

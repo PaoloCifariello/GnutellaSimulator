@@ -7,7 +7,7 @@
  * Paolo Cifariello
  */
 
-package p2p.core.log;
+package edu.p2p.gnutella.core.log;
 
 public enum LogLevel {
     OPTIONAL,   // ordinal value 0, not essential

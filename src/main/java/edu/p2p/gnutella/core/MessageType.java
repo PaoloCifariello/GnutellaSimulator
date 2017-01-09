@@ -7,7 +7,7 @@
  * Paolo Cifariello
  */
 
-package p2p.core;
+package edu.p2p.gnutella.core;
 
 public enum MessageType {
     PING, PONG

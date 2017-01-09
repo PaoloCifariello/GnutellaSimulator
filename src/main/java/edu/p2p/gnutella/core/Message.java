@@ -7,7 +7,7 @@
  * Paolo Cifariello
  */
 
-package p2p.core;
+package edu.p2p.gnutella.core;
 
 public class Message {
     private final String destination;
